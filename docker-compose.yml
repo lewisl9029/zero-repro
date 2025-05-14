@@ -8,7 +8,7 @@ services:
       - ZERO_REPLICA_FILE=/data/sync-replica.db
       - ZERO_LITESTREAM_CONFIG_PATH=/app/litestream.yml
       - ZERO_LITESTREAM_BACKUP_URL=t3.storage.dev
-      - ZERO_IMAGE_URL=rocicorp/zero:0.19.2025050203
+      - ZERO_IMAGE_URL=rocicorp/zero:0.20.2025051301
       - ZERO_CVR_MAX_CONNS=10
       - ZERO_UPSTREAM_MAX_CONNS=10
       - ZERO_CHANGE_MAX_CONNS=3
@@ -37,10 +37,11 @@ services:
       - ZERO_REPLICA_FILE=/data/sync-replica.db
       - ZERO_LITESTREAM_CONFIG_PATH=/app/litestream.yml
       - ZERO_LITESTREAM_BACKUP_URL=t3.storage.dev
-      - ZERO_IMAGE_URL=rocicorp/zero:0.19.2025050203
+      - ZERO_IMAGE_URL=rocicorp/zero:0.20.2025051301
       - ZERO_CVR_MAX_CONNS=10
       - ZERO_UPSTREAM_MAX_CONNS=10
-      - ZERO_CHANGE_STREAMER_URI=http://zero-repro-replication-manager:4849
+      - ZERO_CHANGE_STREAMER_MODE=discover
+      - ZERO_CHANGE_STREAMER_ADDRESS=zero-repro-replication-manager
     ports:
       - "58011:4848"
     depends_on:
