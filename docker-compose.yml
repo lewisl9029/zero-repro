@@ -1,0 +1,97 @@
+services:
+  zero-repro-replication-manager:
+    build: .
+    env_file: .env
+    environment: 
+      - ZERO_REPLICA_FILE=/data/sync-replica.db
+      - ZERO_IMAGE_URL=rocicorp/zero:0.19.2025050203
+      - ZERO_CVR_MAX_CONNS=10
+      - ZERO_UPSTREAM_MAX_CONNS=10
+      - ZERO_CHANGE_MAX_CONNS=3
+      - ZERO_NUM_SYNC_WORKERS=0
+    ports:
+      - "58010:4849"
+    volumes:
+      - zero-repro-replication-manager-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4849/keepalive"]
+      interval: 5s
+      timeout: 3s
+      start_period: 10s
+      start_interval: 1s
+    depends_on:
+      zero-repro-postgres-local:
+        condition: service_healthy
+      zero-repro-postgres-local-zero-change:
+        condition: service_healthy
+      zero-repro-postgres-local-zero-cvr:
+        condition: service_healthy
+  zero-repro-view-syncer:
+    build: .
+    env_file: .env
+    environment: 
+      - ZERO_REPLICA_FILE=/data/sync-replica.db
+      - ZERO_IMAGE_URL=rocicorp/zero:0.19.2025050203
+      - ZERO_CVR_MAX_CONNS=10
+      - ZERO_UPSTREAM_MAX_CONNS=10
+      - ZERO_CHANGE_STREAMER_URI=http://zero-replication-manager:4849
+    ports:
+      - "58011:4848"
+    volumes:
+      - zero-repro-view-syncer-data:/data
+    depends_on:
+      zero-repro-replication-manager:
+        condition: service_healthy
+  zero-repro-postgres-local:
+    image: postgres:17.4-alpine3.21
+    ports:
+      - '58072:5432'
+    env_file: .env
+    environment:
+      - POSTGRES_DB=data
+    volumes:
+      - zero-repro-postgres-local-data:/var/lib/postgresql/data
+    command: [ "postgres", "-c", "wal_level=logical" ]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d data -U postgres"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+  zero-repro-postgres-local-zero-change:
+    image: postgres:17.4-alpine3.21
+    ports:
+      - '58073:5432'
+    env_file: .env
+    environment:
+      - POSTGRES_DB=zero_change
+    volumes:
+      - zero-repro-postgres-local-zero-change-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d zero_change -U postgres"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+  zero-repro-postgres-local-zero-cvr:
+    image: postgres:17.4-alpine3.21
+    ports:
+      - '58074:5432'
+    env_file: .env
+    environment:
+      - POSTGRES_DB=zero_cvr
+    volumes:
+      - zero-repro-postgres-local-zero-cvr-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d zero_cvr -U postgres"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+volumes:
+  zero-repro-postgres-local-data:
+  zero-repro-postgres-local-zero-change-data:
+  zero-repro-postgres-local-zero-cvr-data:
+  zero-repro-replication-manager-data:
+  zero-repro-view-syncer-data:
+
+networks:
+  default:
+    name: zero-repro
