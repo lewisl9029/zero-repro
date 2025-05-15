@@ -6,9 +6,9 @@ dbs:
     watermark-table: _zero.replicationState
     watermark-column: stateVersion
     replicas:
-      - url: s3://rough-brook-7340/zero-repro-sync-replica
-        endpoint: ${ZERO_LITESTREAM_BACKUP_URL}
-        region: auto
+      - url: ${ZERO_LITESTREAM_BACKUP_URL}
+        endpoint: ${LITESTREAM_S3_ENDPOINT}
+        region: ${LITESTREAM_S3_REGION}
         type: s3
         retention: ${ZERO_LITESTREAM_SNAPSHOT_BACKUP_INTERVAL_MINUTES}m
         retention-check-interval: 1h
